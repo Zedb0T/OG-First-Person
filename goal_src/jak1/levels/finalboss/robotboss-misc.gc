@@ -43,7 +43,7 @@
       ((-> self enter-has-run)
        )
       (else
-        (set! *camera-base-mode* cam-robotboss)
+        (set! *camera-base-mode* cam-firstperson)
         (set! (-> self circular-follow quad) (-> *camera* tpos-curr-adj quad))
         (set! (-> self pivot-rad) 73728.0)
         (set! (-> self blend-from-type) (the-as uint 2))
@@ -54,7 +54,7 @@
     )
   :trans (behavior ()
     (when (not (logtest? (-> *camera* master-options) 2))
-      (set! *camera-base-mode* cam-string)
+      (set! *camera-base-mode* cam-firstperson)
       (cam-slave-go cam-free-floating)
       )
     (none)

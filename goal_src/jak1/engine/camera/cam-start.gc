@@ -13,7 +13,7 @@
   (kill-by-name 'camera-combiner *active-pool*)
   (set! *camera* #f)
   (set! *camera-combiner* #f)
-  (set! *camera-base-mode* cam-string)
+  (set! *camera-base-mode* cam-firstperson)
   (none)
   )
 

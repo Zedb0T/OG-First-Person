@@ -36,6 +36,7 @@
 (declare-type camera-slave process)
 (define-extern cam-master-set-entity (function cam-setting-data none))
 (define-extern cam-eye (state camera-slave))
+(define-extern cam-firstperson (state camera-slave))
 (define-extern cam-endlessfall (state camera-slave))
 (define-extern cam-master-activate-slave (function symbol none))
 
@@ -389,6 +390,7 @@
     cam-decel
     cam-endlessfall
     cam-eye
+    cam-firstperson
     cam-fixed
     cam-fixed-read-entity
     cam-free-floating
