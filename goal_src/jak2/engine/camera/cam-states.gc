@@ -113,6 +113,8 @@
     )
   )
 
+
+
 (defstate cam-pov (camera-slave)
   :event (behavior ((proc process) (arg1 int) (event-type symbol) (event event-message-block))
     (let ((v1-0 event-type))
@@ -478,7 +480,7 @@
 
 
 (define *CAM_EYE-bank*
-  (new 'static 'cam-eye-bank :rot-speed 364.0889 :max-degrees 12743.111 :max-fov 11650.845 :min-fov 6189.511)
+  (new 'static 'cam-eye-bank :rot-speed 864.0889 :max-degrees 12743.111 :max-fov 11650.845 :min-fov 6189.511)
   )
 
 (defstate cam-eye (camera-slave)
@@ -529,24 +531,26 @@
                 (s5-0 (new-stack-matrix0))
                 )
             (when (not (logtest? (-> *camera* settings master-options) (cam-master-options IGNORE_ANALOG)))
-              (let ((f30-0 (analog-input
+                (let ((f30-0 (analog-input  ;; changed for pc port
                              (the-as int (+ (-> *cpad-list* cpads 0 rightx) -256 (-> *cpad-list* cpads 0 leftx)))
-                             0.0
-                             48.0
-                             110.0
-                             -1.0
+                             (the-as float 0.0)
+                             (the-as float 48.0)
+                             (the-as float 110.0)
+                             (the-as float -1.0)
                              )
                            )
-                    (f0-0 (analog-input
+                    (f0-0 (analog-input   ;; changed for pc port
                             (the-as int (+ (-> *cpad-list* cpads 0 righty) -256 (-> *cpad-list* cpads 0 lefty)))
-                            0.0
-                            48.0
-                            110.0
-                            -1.0
+                            (the-as float 0.0)
+                            (the-as float 48.0)
+                            (the-as float 110.0)
+                            (the-as float -1.0)
                             )
                           )
                     )
-                (set! (-> s4-0 y) (- (-> s4-0 y) (* (- f30-0) (-> *CAM_EYE-bank* rot-speed))))
+                ;; (set! (-> s4-0 y) (- (-> s4-0 y) (* (- f30-0) (* (-> *display* time-adjust-ratio) (-> *CAM_firstperson-bank* rot-speed))))) ;; changed for high fps
+                ;; (set! (-> s4-0 x) (- (-> s4-0 x) (* (- f0-0) (* (-> *display* time-adjust-ratio) (-> *CAM_firstperson-bank* rot-speed))))) ;; changed for high fps
+                    (set! (-> s4-0 y) (- (-> s4-0 y) (* (- f30-0) (-> *CAM_EYE-bank* rot-speed))))
                 (set! (-> s4-0 x) (- (-> s4-0 x) (* (- f0-0) (-> *CAM_EYE-bank* rot-speed))))
                 )
               )
@@ -592,8 +596,8 @@
                     )
                   )
               )
-            (matrix-axis-angle! s5-0 (the-as vector (-> self tracking)) (- (-> s4-0 x)))
-            (matrix*! (the-as matrix (-> self tracking)) (the-as matrix (-> self tracking)) s5-0)
+            ;; (matrix-axis-angle! s5-0 (the-as vector (-> self tracking)) (- (-> s4-0 x)))
+            ;; (matrix*! (the-as matrix (-> self tracking)) (the-as matrix (-> self tracking)) s5-0)
             )
           (when (not (logtest? (-> self options) (cam-slave-options-u32 ALLOW_Z_ROT)))
             (let ((f30-1 (vector-dot (-> *camera* local-down) (-> self tracking inv-mat vector 2))))
@@ -1221,6 +1225,8 @@
     )
   )
 
+
+  
 (deftype cam-string-bank (basic)
   ((los-coll-rad  meters  :offset-assert   4)
    (los-coll-rad2 meters  :offset-assert   8)
@@ -3372,108 +3378,82 @@
   (none)
   )
 
+(deftype cam-firstperson-bank (basic)
+  ((rot-speed   float  :offset-assert   4)
+   (max-degrees float  :offset-assert   8)
+   (max-fov     float  :offset-assert  12)
+   (min-fov     float  :offset-assert  16)
+   )
+  :method-count-assert 9
+  :size-assert         #x14
+  :flag-assert         #x900000014
+  )
+
+ ;;364
+(define *CAM_firstperson-bank*
+  (new 'static 'cam-firstperson-bank :rot-speed 494.0889 :max-degrees 0.0 :max-fov 11650.845 :min-fov 6189.511)
+  )
+
+;; main first-person camera
+;; note: modified for high fps
 (defstate cam-stick (camera-slave)
-  :event (the-as
-    (function process int symbol event-message-block object :behavior camera-slave)
-    cam-standard-event-handler
+   :event (behavior ((proc process) (arg1 int) (event-type symbol) (event event-message-block))
+    (let ((v1-0 event-type))
+      (the-as object (if (= v1-0 'teleport)
+                         #f
+                         (the-as symbol (cam-standard-event-handler proc arg1 event-type event))
+                         )
+              )
+      )
     )
   :enter (behavior ()
     (when (not (-> self enter-has-run))
-      (set! (-> self view-off-param) (-> *camera* view-off-param-save))
-      (set! (-> self view-off x) 0.0)
-      (set! (-> self view-off y)
-            (lerp (-> *CAM_STICK-bank* min-y) (-> *CAM_STICK-bank* max-y) (-> self view-off-param))
-            )
-      (set! (-> self view-off z)
-            (lerp (-> *CAM_STICK-bank* min-z) (-> *CAM_STICK-bank* max-z) (-> self view-off-param))
-            )
-      (cam-calc-follow! (-> self tracking) (-> self trans) #f)
-      (vector-flatten! (-> self view-flat) (-> self tracking inv-mat vector 2) (-> *camera* local-down))
-      (vector-negate! (-> self view-flat) (-> self view-flat))
-      (vector-normalize! (-> self view-flat) (-> self view-off z))
-      (vector--float*! (-> self desired-pos) (-> self view-flat) (-> *camera* local-down) (-> self view-off y))
-      (vector+! (-> self desired-pos) (-> self desired-pos) (-> self tracking follow-pt))
-      (set! (-> self trans quad) (-> self desired-pos quad))
-      (vector-reset! (-> self velocity))
-      (set! (-> self blend-from-type) (the-as uint 2))
-      (set! (-> self blend-to-type) (camera-blend-to-type unknown-2))
-      (slave-set-rotation! (-> self tracking) (-> self trans) (-> self options) (-> self fov) #f)
+      (set! (-> self blend-from-type) (the-as uint 1))
+      (set! (-> self blend-to-type) (camera-blend-to-type unknown-1))
       )
     (none)
     )
   :trans (behavior ()
-    (if (not (logtest? (-> *camera* master-options) (cam-master-options-u32 HAVE_TARGET)))
-        (cam-slave-go cam-free-floating)
-        )
-    (when (not (paused?))
-      (when (not (logtest? (-> *camera* settings master-options) (cam-master-options IGNORE_ANALOG)))
-        (let ((f0-0 (analog-input (the-as int (-> *cpad-list* cpads 0 righty)) 128.0 32.0 110.0 0.05)))
-          (cond
-            ((< (* 0.05 (- 1.0 (-> self view-off-param))) f0-0)
-             (+! (-> self view-off-param) (* 0.05 (- 1.0 (-> self view-off-param))))
-             )
-            ((< f0-0 (* 0.05 (- (-> self view-off-param))))
-             (+! (-> self view-off-param) (* 0.05 (- (-> self view-off-param))))
-             )
-            (else
-              (+! (-> self view-off-param) f0-0)
-              )
-            )
-          )
-        )
-      (set! (-> self view-off y)
-            (lerp (-> *CAM_STICK-bank* min-y) (-> *CAM_STICK-bank* max-y) (-> self view-off-param))
-            )
-      (set! (-> self view-off z)
-            (lerp (-> *CAM_STICK-bank* min-z) (-> *CAM_STICK-bank* max-z) (-> self view-off-param))
-            )
-      (when (not (logtest? (-> *camera* settings master-options) (cam-master-options IGNORE_ANALOG)))
-        (let ((f0-16 (analog-input
-                       (the-as int (-> *cpad-list* cpads 0 rightx))
-                       128.0
-                       32.0
-                       110.0
-                       (* 21845.334 (-> self clock seconds-per-frame))
-                       )
-                     )
-              (gp-0 (new-stack-matrix0))
-              (s3-0 (new-stack-vector0))
-              (s5-0 (new-stack-vector0))
-              (s4-0 (new-stack-vector0))
-              )
-          (cond
-            ((!= f0-16 0.0)
-             (matrix-axis-angle! gp-0 (-> *camera* local-down) f0-16)
-             (vector-matrix*! (-> self view-flat) (-> self view-flat) gp-0)
-             )
-            ((logtest? (-> self options) (cam-slave-options-u32 BUTT_CAM))
-             (set-vector! s5-0 0.0 0.0 1.0 1.0)
-             (vector-normalize-copy! s5-0 (-> self view-flat) 1.0)
-             (set! (-> s3-0 quad) (-> (the-as vector (-> *camera* tgt-rot-mat vector 2)) quad))
-             (vector-flatten! s3-0 s3-0 (-> *camera* local-down))
-             (vector-negate! s3-0 s3-0)
-             (set! (-> s4-0 quad) (-> s5-0 quad))
-             (vector-normalize-copy! s4-0 s3-0 1.0)
-             (matrix-from-two-vectors-max-angle-partial!
-               gp-0
-               s5-0
-               s4-0
-               (* 10922.667 (-> self clock seconds-per-frame))
-               0.05
-               )
-             (vector-matrix*! (-> self view-flat) (-> self view-flat) gp-0)
-             )
-            )
-          )
-        )
+    (when (not (handle->process (-> *camera* settings pov-handle)))
+      (set! (-> self blend-from-type) (the-as uint 0))
+      (cam-slave-go cam-fixed)
       )
     (none)
     )
   :code (behavior ()
     (until #f
-      (if (not (paused?))
-          (cam-stick-code)
+      (when (not (paused?))
+        (vector<-cspace! (-> self trans) (-> (the-as pov-camera (-> *camera* settings pov-handle process 0))
+                                             node-list
+                                             data
+                                             (-> *camera* settings pov-bone)
+                                             )
+                         )
+        (let* ((v1-6 (-> self tracking))
+               (a3-0 (-> (the-as pov-camera (-> *camera* settings pov-handle process 0))
+                         node-list
+                         data
+                         (-> *camera* settings pov-bone)
+                         bone
+                         transform
+                         )
+                     )
+               (a0-9 (-> a3-0 quad 0))
+               (a1-11 (-> a3-0 quad 1))
+               (a2-0 (-> a3-0 quad 2))
+               (a3-1 (-> a3-0 trans quad))
+               )
+          (set! (-> v1-6 inv-mat quad 0) a0-9)
+          (set! (-> v1-6 inv-mat quad 1) a1-11)
+          (set! (-> v1-6 inv-mat quad 2) a2-0)
+          (set! (-> v1-6 inv-mat trans quad) a3-1)
           )
+        (vector-reset! (-> self tracking inv-mat trans))
+        (let ((gp-0 (new 'stack-no-clear 'vector)))
+          (vector-matrix*! gp-0 (-> *camera* settings pov-offset) (the-as matrix (-> self tracking)))
+          (vector+! (-> self trans) (-> self trans) gp-0)
+          )
+        )
       (suspend)
       )
     #f

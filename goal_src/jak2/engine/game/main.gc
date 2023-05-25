@@ -117,10 +117,24 @@
   (or (= *master-mode* 'pause) (= *master-mode* 'progress) (= *master-mode* 'menu) (= *master-mode* 'freeze))
   )
 
+(defun go-first-person()
+(set-setting-by-param *setting-control* 'mode-name 'cam-eye 0 0)
+(logior! (-> *target* draw status) (draw-control-status no-draw-bounds2))
+)
 (defun movie? ()
+
+;;  (if  (= (-> (-> (-> (the-as (pointer camera-slave) (-> *camera* child))) state) name) 'cam-string)
+;;  (begin
+;;  (set-setting-by-param *setting-control* 'mode-name 'cam-eye 0 0)
+;;  ))
+
+
+(when *target* 
+(if (!= (-> *target* draw status) (draw-control-status no-draw-bounds2)) (go-first-person)))
   "Are we in a movie?"
   (logtest? (-> *kernel-context* prevent-from-run) (process-mask movie))
   )
+
 
 (defun demo? ()
   "Are we a demo version?"
