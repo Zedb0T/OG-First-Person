@@ -120,6 +120,7 @@
 (defun go-first-person()
 (set-setting-by-param *setting-control* 'mode-name 'cam-eye 0 0)
 (logior! (-> *target* draw status) (draw-control-status no-draw-bounds2))
+(send-event *target* 'sidekick #f)
 )
 (defun movie? ()
 
