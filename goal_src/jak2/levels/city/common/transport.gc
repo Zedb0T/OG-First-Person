@@ -171,7 +171,7 @@
                                           :rot-max (new 'static 'array float 2 0.0 2184533.2)
                                           :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
                                           :local-dir (new 'static 'vector :z 1.0 :w 1.0)
-                                          :barrel-array (new 'static 'inline-array turret-barrel-info 4
+                                          :barrel-array (new 'static 'inline-array turret-barrel-info 5
                                             (new 'static 'turret-barrel-info
                                               :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
                                               :local-dir (new 'static 'vector :z 1.0 :w 1.0)

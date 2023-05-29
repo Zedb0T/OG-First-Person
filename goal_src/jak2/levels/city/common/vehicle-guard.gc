@@ -57,23 +57,22 @@
 
 
 (deftype turret-control-info (structure)
-  ((joint-index  int8                         :offset-assert   0)
-   (barrel-count int8                         :offset-assert   1)
-   (shot-speed   float                        :offset-assert   4)
-   (attack-range float                        :offset-assert   8)
-   (rot-min      float              2         :offset-assert  12)
-   (rot-max      float              2         :offset-assert  20)
-   (rot-x-min    float                        :offset         12)
-   (rot-x-max    float                        :offset         20)
-   (rot-y-min    float                        :offset         16)
-   (rot-y-max    float                        :offset         24)
-   (local-pos    vector             :inline   :offset-assert  32)
-   (local-dir    vector             :inline   :offset-assert  48)
-   (barrel-array turret-barrel-info 4 :inline :offset-assert  64)
+  ((joint-index  int8                          )
+   (barrel-count int8                         )
+   (shot-speed   float                       )
+   (attack-range float                       )
+   (rot-min      float              2        )
+   (rot-max      float              2        )
+   (rot-x-min    float                      )
+   (rot-x-max    float                     )
+   (rot-y-min    float                       )
+   (rot-y-max    float                       )
+   (local-pos    vector             :inline   )
+   (local-dir    vector             :inline  )
+   (barrel-array turret-barrel-info 5 :inline )
    )
   :method-count-assert 9
-  :size-assert         #xc0
-  :flag-assert         #x9000000c0
+
   )
 
 

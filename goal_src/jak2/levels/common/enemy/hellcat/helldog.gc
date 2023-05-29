@@ -272,11 +272,12 @@
                                               :rot-max (new 'static 'array float 2 0.0 21845.334)
                                               :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
                                               :local-dir (new 'static 'vector :z 1.0 :w 1.0)
-                                              :barrel-array (new 'static 'inline-array turret-barrel-info 4
+                                              :barrel-array (new 'static 'inline-array turret-barrel-info 5
                                                 (new 'static 'turret-barrel-info
                                                   :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
                                                   :local-dir (new 'static 'vector :z 1.0 :w 1.0)
                                                   )
+                                                (new 'static 'turret-barrel-info)
                                                 (new 'static 'turret-barrel-info)
                                                 (new 'static 'turret-barrel-info)
                                                 (new 'static 'turret-barrel-info)
@@ -286,14 +287,14 @@
 
 (define *helldog-top-turret-control-info* (new 'static 'turret-control-info
                                             :joint-index #x6
-                                            :barrel-count 2
+                                            :barrel-count 5
                                             :shot-speed 819200.0
                                             :attack-range 286720.0
                                             :rot-min (new 'static 'array float 2 -1820.4445 -65536.0)
                                             :rot-max (new 'static 'array float 2 1820.4445 65536.0)
                                             :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
                                             :local-dir (new 'static 'vector :z 1.0 :w 1.0)
-                                            :barrel-array (new 'static 'inline-array turret-barrel-info 4
+                                            :barrel-array (new 'static 'inline-array turret-barrel-info 5
                                               (new 'static 'turret-barrel-info
                                                 :local-pos (new 'static 'vector :x 5734.4 :y -819.2 :z 6144.0 :w 1.0)
                                                 :local-dir (new 'static 'vector :z 1.0 :w 1.0)
@@ -302,8 +303,13 @@
                                                 :local-pos (new 'static 'vector :x -5734.4 :y -819.2 :z 6144.0 :w 1.0)
                                                 :local-dir (new 'static 'vector :z 1.0 :w 1.0)
                                                 )
+                                              (new 'static 'turret-barrel-info
+                                               :local-pos (new 'static 'vector :y -1433.6 :z 4096.0 :w 1.0)
+                                               :local-dir (new 'static 'vector :z 1.0 :w 1.0)
+                                                )
                                               (new 'static 'turret-barrel-info)
                                               (new 'static 'turret-barrel-info)
+                                              
                                               )
                                             )
         )
